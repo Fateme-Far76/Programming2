@@ -30,6 +30,7 @@ The following libraries were used in the implementation of the codes:
 - aiohttp
 - http.server
 - socketserver
+- Dask
 - datetime
 - Bio
 - multiprocessing
