@@ -2,53 +2,63 @@ import asyncio
 import aiohttp
 import json
 
-class NetworkClient:
+class NetworkDataFetcher:
+    '''This class provides the methods to fetch data from a server'''
+
     def __init__(self, base_url):
+        '''Initializes the NetworkDataFetcher with the base URL of the data server'''
         self.base_url = base_url
 
-    async def fetch_data(self, endpoint, callback):
-        url = self.base_url + endpoint
+    async def fetch_data(self, endpoint, data_processing_callback):
+        '''Fetches data from the provided endpoint, processes it using the callback function'''
+
+        # Determines the full URL based on the base URL and the endpoint
+        url = endpoint if endpoint.startswith('http') else self.base_url + '/' + endpoint
+
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
+                print(f"Fetching data from {url}: {response.status}")
                 if response.status == 200:
-                    data = await response.text()
-                    result = json.loads(data)
-                    return callback(result)
+                    raw_data = await response.text()
+                    print(f"Data received: {raw_data[:100]}...")
+                    processed_data = json.loads(raw_data)
+                    return data_processing_callback(processed_data)
                 else:
+                    print(f"Error fetching data from {url}: {response.status} {await response.text()}")
                     return None
-                
-def calculate_average_year(data):
-    temperatures = [entry["Yearly Average"] for entry in data]
-    average_temperature = sum(temperatures) / len(temperatures)
-    return {"Average Temperature": average_temperature}
 
-def calculate_average_month(data):
-    monthly_averages = {month: 0.0 for month in data[0].keys() if month != "Year"}
-    count = 0
-    for entry in data:
-        for month in monthly_averages.keys():
-            monthly_averages[month] += entry[month]
-        count += 1
-    
-    for month in monthly_averages.keys():
-        monthly_averages[month] /= count
+def calculate_yearly_average(data):
+    '''Calculates the average temperature for each month in the given year's data'''
 
-    return monthly_averages
+    averages = {month: sum(temperatures.values()) / len(temperatures) for month, temperatures in data.items() if month != 'Year'}
+
+    return {'Average Temperature': averages}
+
+
+def calculate_monthly_average(data):
+    '''Calculates the average temperature for each month in the given data'''
+
+    averages = {month: sum(temperatures.values()) / len(temperatures) for month, temperatures in data.items() if month != 'Year'}
+
+    return {'Average Temperature': averages}
 
 
 async def main():
-    client = NetworkClient("http://localhost:8000/data")
-    tasks = [
-        client.fetch_data("all", calculate_average_year),
-        client.fetch_data("1991", calculate_average_year),
-        client.fetch_data("1991/2000", calculate_average_month) 
+    '''This is the main method. It initializes the data fetcher and fetches data from different endpoints.'''
+
+    data_fetcher = NetworkDataFetcher("http://localhost:8080/data")
+    fetch_tasks = [
+        data_fetcher.fetch_data("all", calculate_yearly_average),
+        data_fetcher.fetch_data("1991", calculate_monthly_average),
+        data_fetcher.fetch_data("http://localhost:8080/data/1991-2000", calculate_monthly_average)
     ]
-    results = await asyncio.gather(*tasks)
+    
+    # Wait for all fetch tasks to complete
+    results = await asyncio.gather(*fetch_tasks)
+
+    # Print the results
     for result in results:
-        if result is not None:
-            print(result)
-        else:
-            print("Error fetching data")
+        print("Result:" if result else "No result returned for a task", result)
 
 if __name__ == "__main__":
     asyncio.run(main())
