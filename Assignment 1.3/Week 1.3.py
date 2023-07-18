@@ -123,10 +123,15 @@ class Reader:
             line_list.append(line)
 
         # Filter out any empty lines from 'line_list'
+        # Is this necessary?
+        # Shouldn't you do this *before* the loop above?
         non_empty_lines = [line for line in line_list if line.strip() != '']
 
         # If there are non-empty lines, convert them to JSON format and notify observers
         if non_empty_lines:
+            # Why are you making a new CsvConverter on every call to this method?
+            # That object is basically immutable once it has been created, so you 
+            # could (should) do this whenever you make a new `Reader`...
             result = CsvConverter(self.file_path).csv_to_json(non_empty_lines)
             self.start_line += self.stride 
             self.notify_observers(result)
@@ -135,6 +140,11 @@ class Reader:
             return ''
 
     def start_reading(self):
+        # I don't think it is a good idea to have a method within this class that 
+        # just continues reading until the whole document has been consumed. This
+        # basically blocks the main thread. It is better to have the control of the 
+        # reading *outside* this class.
+
         """
         Start reading the CSV file line by line in strides until there are no more lines to read.  
         """

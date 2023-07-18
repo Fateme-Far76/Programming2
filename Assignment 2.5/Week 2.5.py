@@ -13,6 +13,7 @@ def load_dataframe(file_path):
     Returns:
         df (dask.dataframe.DataFrame): The loaded Dask DataFrame.
     """
+    # You should have called the variable `ddf`, to make clear that it is a Dask dataframe.
     df = dd.read_csv(file_path, delimiter="\t", dtype=str, header=None, names=list(str(range(15))))
     return df
 

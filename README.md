@@ -41,6 +41,7 @@ The following libraries were used in the implementation of the codes:
 - sklearn
 
 Please make sure to install these libraries before running the code.
+BB: I don't think all the think you mention need to be installed; e.g. `linecache` and `datetime` are part of the standard distro of Python.
 
 ## Contributing
 This assignment repository was primarily developed by Fatemeh Rakhshanifar. I would like to acknowledge the contributions of Samaneh Shahpouri who has contributed to some of the assignments.
