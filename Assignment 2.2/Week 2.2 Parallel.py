@@ -9,6 +9,11 @@ from Bio import Entrez
 ssl._create_default_https_context = ssl._create_unverified_context
 
 # Set the email and NCBI API Key for Entrez. 
+
+# The way you have setup these tests results in a lot of duplicate code.
+# You could have abstracted away all these duplication and still perform the 
+# same tests.
+
 Entrez.email = 'f.rakhshanifar@st.hanze.nl'
 Entrez.api_key = '3fb661596ffc24f9f2fa5ae75f8ae8b76709'
 

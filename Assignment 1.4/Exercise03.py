@@ -8,6 +8,7 @@ class Crawler:
         self.url = url
         self.current_sub_url = None
 
+    # Why do you think this method cannot be made static? 
     def hack_ssl(self):
         """ ignores the certificate errors"""
         ctx = ssl.create_default_context()
@@ -50,6 +51,9 @@ class Crawler:
                 phone = ""
         return phone.replace('Facebook', '').replace('Telefoon:', '')
 
+    # Good observation that these methods could be made static. However,
+    # I wonder if another refactoring would not be possible in this case;
+    # e.g. removing these static methods to another (utility-)class.
     @staticmethod
     def get_email(soup):
         try:
@@ -116,6 +120,10 @@ class Crawler:
             email = self.get_email(info)
             email = self.remove_html_tags(email).replace("/", "")
             self.sub_index += 1
+            # This would be better if you used `yield` instead of `return`;
+            # now, you need to have a lot of state management within the 
+            # object, which you could also (better) do on a smaller scope 
+            # (i.e. this method)
             return f'{self.current_sub_url} ; {phone} ; {email}'
 
         # If there are no sub-urls left, raise StopIteration
